@@ -1,47 +1,35 @@
 package io.github.kbuntrock;
 
-import java.nio.file.FileSystems;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardWatchEventKinds;
-import java.nio.file.WatchEvent;
-import java.nio.file.WatchKey;
-import java.nio.file.WatchService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.ExitCodeGenerator;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import picocli.CommandLine;
+import picocli.CommandLine.IFactory;
 
 @SpringBootApplication
-public class App implements CommandLineRunner {
+public class App implements CommandLineRunner, ExitCodeGenerator {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(App.class);
+	private final IFactory factory;
+	private final WatchAndMergeCommand command;
+	private int exitCode;
 
 	public static void main(final String[] args) {
 		SpringApplication.run(App.class, args);
 	}
 
+	public App(final IFactory factory, final WatchAndMergeCommand command) {
+		this.factory = factory;
+		this.command = command;
+	}
+
 	@Override
 	public void run(final String... args) throws Exception {
-		LOGGER.warn("Started watching");
-		if(args.length < 1) {
-			return;
-		}
-		final String dirToWatch = args[0];
-		final WatchService watchService = FileSystems.getDefault().newWatchService();
-		final Path path = Paths.get(dirToWatch);
-		path.register(watchService, StandardWatchEventKinds.ENTRY_CREATE,
-			StandardWatchEventKinds.ENTRY_DELETE, StandardWatchEventKinds.ENTRY_MODIFY);
+		exitCode = new CommandLine(command, factory).execute(args);
+	}
 
-		WatchKey key;
-		while((key = watchService.take()) != null) {
-			for(final WatchEvent<?> event : key.pollEvents()) {
-				System.out.println(
-					"Event kind:" + event.kind()
-						+ ". File affected: " + event.context() + ".");
-			}
-			key.reset();
-		}
+	@Override
+	public int getExitCode() {
+		return 0;
 	}
 }
