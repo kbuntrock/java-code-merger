@@ -8,6 +8,7 @@ import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Modifier.Keyword;
 import com.github.javaparser.ast.PackageDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
+import com.github.javaparser.ast.body.EnumDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 import java.io.BufferedWriter;
@@ -144,6 +145,13 @@ public class JavaFileMerger {
 			.findAll(ClassOrInterfaceDeclaration.class);
 		if(!nodes.isEmpty()) {
 			String content = nodes.get(0).toString();
+			content = content.substring(content.indexOf("public") + 7, content.length());
+			return Optional.of(content);
+		}
+		final List<EnumDeclaration> nodesEnums = javaFile.getCompilationUnit().getParentNodeForChildren()
+			.findAll(EnumDeclaration.class);
+		if(!nodesEnums.isEmpty()) {
+			String content = nodesEnums.get(0).toString();
 			content = content.substring(content.indexOf("public") + 7, content.length());
 			return Optional.of(content);
 		}
