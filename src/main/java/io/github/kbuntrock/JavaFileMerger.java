@@ -227,5 +227,11 @@ public class JavaFileMerger {
 			super.visit(classOrInterfaceDeclaration, javaFile);
 			javaFile.setClassName(classOrInterfaceDeclaration.getNameAsString());
 		}
+
+		@Override
+		public void visit(final EnumDeclaration enumDeclaration, final JavaFile javaFile) {
+			super.visit(enumDeclaration, javaFile);
+			javaFile.setClassName(enumDeclaration.getNameAsString());
+		}
 	}
 }
