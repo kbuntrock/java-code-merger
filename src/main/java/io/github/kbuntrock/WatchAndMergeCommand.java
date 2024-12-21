@@ -38,6 +38,9 @@ public class WatchAndMergeCommand implements Callable<Integer> {
 	@Option(names = {"-d", "--debug"}, description = "Turn on debug logs", required = false)
 	boolean debug;
 
+	@Option(names = {"--strip-comments"}, description = "Strip all comments", required = false)
+	boolean stripComments;
+
 	@Option(names = {"-o", "--output"}, description = "Output file", required = true)
 	String outputFilePath;
 
@@ -59,7 +62,7 @@ public class WatchAndMergeCommand implements Callable<Integer> {
 				((ch.qos.logback.classic.Logger) LOGGER).setLevel(Level.DEBUG);
 				((ch.qos.logback.classic.Logger) JavaFileMerger.LOGGER).setLevel(Level.DEBUG);
 			}
-			javaFileMerger = new JavaFileMerger(outputFilePath);
+			javaFileMerger = new JavaFileMerger(outputFilePath, stripComments);
 			watch();
 		} catch(final Exception ex) {
 			LOGGER.error("Watcher error", ex);

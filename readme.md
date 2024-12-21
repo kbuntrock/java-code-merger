@@ -1,0 +1,1 @@
+java -jar target\java-code-merger-0.0.2.jar C:\Users\xxx\src\main\java -o C:\Users\xxx\target\outputFile.java --strip-comments

@@ -4,6 +4,7 @@ import com.github.javaparser.JavaParser;
 import com.github.javaparser.ParseProblemException;
 import com.github.javaparser.ParseResult;
 import com.github.javaparser.ParserConfiguration;
+import com.github.javaparser.ParserConfiguration.LanguageLevel;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Modifier.Keyword;
 import com.github.javaparser.ast.PackageDeclaration;
@@ -44,10 +45,13 @@ public class JavaFileMerger {
 
 	private final JavaParser javaParser;
 
-	public JavaFileMerger(final String outputFilePath) {
+	public JavaFileMerger(final String outputFilePath, final boolean stripComments) {
 		final ParserConfiguration parserConfiguration = new ParserConfiguration();
-		parserConfiguration.setLanguageLevel(ParserConfiguration.LanguageLevel.JAVA_17);
+		parserConfiguration.setLanguageLevel(LanguageLevel.BLEEDING_EDGE);
 		parserConfiguration.setCharacterEncoding(StandardCharsets.UTF_8);
+		if(stripComments) {
+			parserConfiguration.setAttributeComments(false);
+		}
 		javaParser = new JavaParser(parserConfiguration);
 		this.outputFilePath = outputFilePath;
 	}
@@ -129,7 +133,7 @@ public class JavaFileMerger {
 					}
 				}
 				writer.write("\n\n");
-				writer.write("// Last genereted at " + LocalDateTime.now().format(DATE_TIME_FORMATTER));
+				writer.write("// Last generated at " + LocalDateTime.now().format(DATE_TIME_FORMATTER));
 
 			} catch(final IOException e) {
 				throw new RuntimeException(e);
@@ -187,7 +191,12 @@ public class JavaFileMerger {
 	private Set<String> findImports() {
 		final Set<String> imports = new HashSet<>();
 		for(final JavaFile file : files.values()) {
-			imports.addAll(file.getCompilationUnit().getImports().stream().map(x -> x.getNameAsString()).collect(Collectors.toList()));
+			imports.addAll(
+				file.getCompilationUnit().getImports().stream().map(x -> x.toString()
+					.replace("import ", "")
+					.replace("\n", "")
+					.replace("\r", "")
+					.replace(";", "")).collect(Collectors.toList()));
 		}
 		final Set<String> toRemove = findImportToRemove();
 		imports.removeAll(toRemove);
